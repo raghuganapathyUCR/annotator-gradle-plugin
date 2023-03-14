@@ -1,0 +1,62 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2023 Nima Karimipour
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+// The oldest version of Error Prone that we support running on
+def oldestErrorProneApi = "2.4.0"
+// Latest released Error Prone version that we've tested with
+def latestErrorProneVersion = "2.14.0"
+// Default to using latest tested Error Prone version, except on Java 8, where 2.10.0 is the last version
+// that works
+def defaultErrorProneVersion =  JavaVersion.current() >= JavaVersion.VERSION_11 ? latestErrorProneVersion : "2.10.0"
+
+
+def versions = [
+        errorProne             : defaultErrorProneVersion,
+        errorProneApi          : project.hasProperty("epApiVersion") ? epApiVersion : oldestErrorProneApi,
+        autoService            : "1.0-rc7",
+        guava                  : "31.0.1-jre",
+        junit                  : "5.7.2",
+        nullaway               : "0.9.8"
+]
+
+def build = [
+        guava                   : "com.google.guava:guava:${versions.guava}",
+        errorProneCoreOld       : "com.google.errorprone:error_prone_core:${oldestErrorProneApi}",
+        errorProneCore          : "com.google.errorprone:error_prone_core:${versions.errorProne}",
+        errorProneJavac         : "com.google.errorprone:javac:9+181-r4173-1",
+        errorProneCheckApi      : "com.google.errorprone:error_prone_check_api:${versions.errorProneApi}",
+        nullaway                : "com.uber.nullaway:nullaway:${versions.nullaway}",
+]
+
+def test = [
+        junitapi                : "org.junit.jupiter:junit-jupiter-api:${versions.junit}",
+        junitengine             : "org.junit.jupiter:junit-jupiter-engine:${versions.junit}",
+        errorProneTestHelpers   : "com.google.errorprone:error_prone_test_helpers:${versions.errorProneApi}",
+]
+
+ext.deps = [
+        "build": build,
+        "test": test,
+        "versions": versions
+]
