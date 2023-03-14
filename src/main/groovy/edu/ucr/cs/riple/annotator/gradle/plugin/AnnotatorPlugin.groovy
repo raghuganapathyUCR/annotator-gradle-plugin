@@ -31,7 +31,7 @@ class AnnotatorPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        AnnotatorExtension userConfig = project.extensions.findByType(AnnotatorExtension.class)?:
+        AnnotatorExtension userConfig = project.extensions.findByType(AnnotatorExtension.class) ?:
                 project.extensions.create("annotator", AnnotatorExtension)
     }
 }
