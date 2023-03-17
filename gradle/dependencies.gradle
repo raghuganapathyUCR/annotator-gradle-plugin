@@ -37,7 +37,7 @@ def versions = [
         autoService            : "1.0-rc7",
         guava                  : "31.0.1-jre",
         junit                  : "5.7.2",
-        nullaway               : "0.9.8"
+        nullaway               : "0.10.10"
 ]
 
 def build = [

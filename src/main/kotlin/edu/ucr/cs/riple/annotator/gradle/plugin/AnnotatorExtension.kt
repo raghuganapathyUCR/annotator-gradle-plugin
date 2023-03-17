@@ -24,4 +24,14 @@
 
 package edu.ucr.cs.riple.annotator.gradle.plugin
 
-class AnnotatorExtension {}
+import org.gradle.api.model.ObjectFactory
+import org.gradle.kotlin.dsl.listProperty
+
+open class AnnotatorExtension internal constructor(
+    objectFactory: ObjectFactory
+) {
+    /**
+     * The list of packages that should be considered properly annotated according to the NullAway convention.
+     */
+    val annotatedPackages = objectFactory.listProperty<String>()
+}
