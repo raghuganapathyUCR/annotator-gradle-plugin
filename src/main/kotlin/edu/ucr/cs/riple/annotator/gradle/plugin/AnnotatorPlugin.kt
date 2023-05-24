@@ -29,21 +29,20 @@ import net.ltgt.gradle.errorprone.ErrorProneOptions
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.Action
-import org.gradle.api.Named
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.Nested
-import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
-import org.gradle.process.CommandLineArgumentProvider
 import org.gradle.util.GradleVersion
 
+//Name of the extension
 private const val EXTENSION_NAME = "annotator"
 
+//Version of the annotator-scanner library to add to the target project
+private const val ANNOTATOR_SCANNER_VERSION = "edu.ucr.cs.riple.annotator:annotator-scanner:1.3.6"
 class AnnotatorPlugin : Plugin<Project> {
 
     companion object {
@@ -57,16 +56,30 @@ class AnnotatorPlugin : Plugin<Project> {
         }
 
         val extension = extensions.create(EXTENSION_NAME, AnnotatorExtension::class)
+        // Add the annotator-scanner library to the target project
+        dependencies {
+            "annotationProcessor"(ANNOTATOR_SCANNER_VERSION)
+        }
 
+        // Configure the ErrorProne plugin to use the AnnotatorScanner check
         pluginManager.withPlugin(ErrorPronePlugin.PLUGIN_ID) {
             tasks.withType<JavaCompile>().configureEach {
+                //  Get all supplied options
                 val annotatorOptions = (options.errorprone as ExtensionAware).extensions.create(
                     EXTENSION_NAME,
-                    AnnotatorExtension::class,
+                    AnnotatorOptions::class,
                     extension
                 )
+                // TODO: Modify severity code and check for more features to add
+                if(!name.toLowerCase().contains("test")){
+                    options.errorprone {
+                        check("AnnotatorScanner", CheckSeverity.ERROR)
+                        option("AnnotatorScanner:ConfigPath", annotatorOptions.configPath.get())
+                    }
+                }
 
             }
+
         }
     }
 }
