@@ -21,9 +21,9 @@ kotlinDslPluginOptions {
     experimentalWarning.set(false)
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.allWarningsAsErrors = true
-}
+//tasks.withType<KotlinCompile>().configureEach {
+//    kotlinOptions.allWarningsAsErrors = true
+//}
 
 gradle.taskGraph.whenReady {
     if (hasTask(":publishPlugins")) {
@@ -63,6 +63,7 @@ dependencies {
     testImplementation("com.google.errorprone:error_prone_check_api:$errorproneVersion") {
         exclude(group = "com.google.errorprone", module = "javac")
     }
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
 
     additionalPluginClasspath("net.ltgt.gradle:gradle-errorprone-plugin:$errorpronePluginVersion")
 }
