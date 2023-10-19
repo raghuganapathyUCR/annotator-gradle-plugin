@@ -73,6 +73,8 @@ class AnnotatorPlugin : Plugin<Project> {
         val extension = extensions.create(EXTENSION_NAME, AnnotatorExtension::class)
         // Add the annotator-scanner library to the target project
         dependencies {
+//            adds initializer dependency from nullaway, since it's used in RunAnnotator
+            "compileOnly"("com.uber.nullaway:nullaway-annotations:0.10.14")
             "annotationProcessor"(ANNOTATOR_SCANNER_VERSION)
         }
 
@@ -91,8 +93,8 @@ class AnnotatorPlugin : Plugin<Project> {
                 if(!name.toLowerCase().contains("test")){
                     options.errorprone {
                         check("AnnotatorScanner", CheckSeverity.ERROR)
-                        println(project.projectDir.absolutePath + "/build/annotator/scanner.xml")
                         //need to make this more dynamic, extend the options object to include the path to the scanner.xml file by default
+                        option("NullAway:FixSerializationConfigPath", project.projectDir.absolutePath + "/build/annotator/nullaway.xml")
                         option("AnnotatorScanner:ConfigPath", project.projectDir.absolutePath + "/build/annotator/scanner.xml")
                     }
                 }

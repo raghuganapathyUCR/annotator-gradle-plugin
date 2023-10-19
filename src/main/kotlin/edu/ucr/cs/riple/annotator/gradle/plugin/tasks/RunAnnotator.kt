@@ -20,7 +20,8 @@ open class RunAnnotator : DefaultTask() {
     private val jarVersion = "1.3.8"
     private val jarName = "annotator-core-$jarVersion.jar"
     private val annotatorJarPath: String get() = "$projectPath/build/annotator/$jarName"
-    private val initializerClass = "com.example.Initializer"
+//    from nullaway 10.10
+    private val initializerClass = "com.uber.nullaway.annotations.Initializer"
     @TaskAction
     fun runAnnotator() {
         println("Target Project Path: $projectPath")
