@@ -73,6 +73,7 @@ open class RunAnnotator : DefaultTask() {
                 val nullAwayConfigPath = "$projectPath/build/annotator/nullaway.xml"
                 val annotatorConfigPath = "$projectPath/build/annotator/scanner.xml"
                 writer.write("$nullAwayConfigPath\t$annotatorConfigPath")
+                writer.close()
             }
         } catch (e: FileSystemException) {
             println("FS Error: $e")
