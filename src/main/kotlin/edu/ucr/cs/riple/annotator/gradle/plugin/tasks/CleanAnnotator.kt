@@ -4,7 +4,10 @@ import java.io.File
 
 //clean annotator folder task - delete all annotator files in "build"
 open class CleanAnnotator : DefaultTask() {
-
+    init{
+        group = "annotator"
+        description = "Clean annotator folder. (removes ./build/annotator)"
+    }
     @TaskAction
     fun cleanAnnotator() {
         val projectPath = project.projectDir.absolutePath

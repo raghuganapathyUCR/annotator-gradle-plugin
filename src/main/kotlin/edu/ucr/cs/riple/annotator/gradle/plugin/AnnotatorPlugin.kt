@@ -33,10 +33,12 @@ import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import net.ltgt.gradle.errorprone.errorprone
 
 import org.gradle.api.Action
+import org.gradle.api.DefaultTask
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.tasks.TaskAction
 
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.create
@@ -61,7 +63,7 @@ private const val ANNOTATOR_SCANNER_VERSION = "edu.ucr.cs.riple.annotator:annota
 class AnnotatorPlugin : Plugin<Project> {
 
     companion object {
-        const val PLUGIN_ID = "edu.ucr.cs.riple.annotator.gradle.plugin"
+        const val PLUGIN_ID = "edu.ucr.cs.riple.annotator.plugin"
     }
 
     @Override
@@ -73,8 +75,9 @@ class AnnotatorPlugin : Plugin<Project> {
         val extension = extensions.create(EXTENSION_NAME, AnnotatorExtension::class)
         // Add the annotator-scanner library to the target project
         dependencies {
-//            adds initializer dependency from nullaway, since it's used in RunAnnotator
-            "compileOnly"("com.uber.nullaway:nullaway-annotations:0.10.14")
+//            adds initializer dependency from nullaway, since it's used in RunAnnotator - THIS IS SOMETHING WE NEED TO WORK ON
+//            TODO
+//            "compileOnly"("com.uber.nullaway:nullaway-annotations:0.10.14")
             "annotationProcessor"(ANNOTATOR_SCANNER_VERSION)
         }
 
@@ -91,8 +94,11 @@ class AnnotatorPlugin : Plugin<Project> {
                     println("OPTION:$it")
                 }
                 if(!name.toLowerCase().contains("test")){
+//                  task 1  refactor to remove the addition of compile time flags, to the RunAnnotator task, this way the compilaltions requested by Annotator are the only places we inject these flags, per run of the Annotator.
+
                     options.errorprone {
                         check("AnnotatorScanner", CheckSeverity.ERROR)
+                        option("NullAway:SerializeFixMetadata", "true")
                         //need to make this more dynamic, extend the options object to include the path to the scanner.xml file by default
                         option("NullAway:FixSerializationConfigPath", project.projectDir.absolutePath + "/build/annotator/nullaway.xml")
                         option("AnnotatorScanner:ConfigPath", project.projectDir.absolutePath + "/build/annotator/scanner.xml")

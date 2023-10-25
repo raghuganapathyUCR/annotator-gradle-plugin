@@ -99,7 +99,7 @@ tasks {
 gradlePlugin {
     plugins {
         register("annotator") {
-            id = "net.ltgt.annotator"
+            id = "edu.ucr.cs.riple.annotator.plugin"
             displayName = "Adds AnnotatorScanner DSL to Gradle Error Prone plugin"
             description = "Adds AnnotatorScanner DSL to Gradle Error Prone plugin"
             implementationClass = "edu.ucr.cs.riple.annotator.gradle.plugin.AnnotatorPlugin"

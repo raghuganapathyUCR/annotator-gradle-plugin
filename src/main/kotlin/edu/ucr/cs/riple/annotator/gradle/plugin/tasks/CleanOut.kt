@@ -4,7 +4,10 @@ import java.io.File
 
 //clean out folder inside the annotator folder
 open class CleanOut : DefaultTask() {
-
+    init {
+        group = "annotator"
+        description = "Clean outputs inside the annotator folder. (removes ./build/annotator/0)"
+    }
     @TaskAction
     fun cleanOut() {
         val projectPath = project.projectDir.absolutePath
