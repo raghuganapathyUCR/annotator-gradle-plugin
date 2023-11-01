@@ -68,18 +68,15 @@ class AnnotatorPlugin : Plugin<Project> {
 
     @Override
     override fun apply(project: Project): Unit = with(project) {
+        logger.debug("ADDING ANNOTATOR TO TARGET")
         if (GradleVersion.current() < GradleVersion.version("5.2.1")) {
             throw UnsupportedOperationException("$PLUGIN_ID requires at least Gradle 5.2.1")
         }
 
         val extension = extensions.create(EXTENSION_NAME, AnnotatorExtension::class)
+
         // Add the annotator-scanner library to the target project
-        dependencies {
-//            adds initializer dependency from nullaway, since it's used in RunAnnotator - THIS IS SOMETHING WE NEED TO WORK ON
-//            TODO
-//            "compileOnly"("com.uber.nullaway:nullaway-annotations:0.10.14")
-            "annotationProcessor"(ANNOTATOR_SCANNER_VERSION)
-        }
+        dependencies.add("annotationProcessor", ANNOTATOR_SCANNER_VERSION)
 
         // Configure the ErrorProne plugin to use the AnnotatorScanner check
         pluginManager.withPlugin(ErrorPronePlugin.PLUGIN_ID) {
@@ -94,7 +91,8 @@ class AnnotatorPlugin : Plugin<Project> {
                     println("OPTION:$it")
                 }
                 if(!name.toLowerCase().contains("test")){
-//                  task 1  refactor to remove the addition of compile time flags, to the RunAnnotator task, this way the compilaltions requested by Annotator are the only places we inject these flags, per run of the Annotator.
+//                  task 1  refactor to remove the addition of compile time flags, to the RunAnnotator task, this way
+                    //                  the compilaltions requested by Annotator are the only places we inject these flags, per run of the Annotator.
 
                     options.errorprone {
                         check("AnnotatorScanner", CheckSeverity.ERROR)

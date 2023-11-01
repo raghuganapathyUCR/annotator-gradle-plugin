@@ -35,7 +35,7 @@ pluginManagement {
 plugins {  
 	id 'java'  
 	id "net.ltgt.errorprone" version "3.1.0"  
-	id "net.ltgt.annotator" version "0.0.1"  
+	id "edu.ucr.cs.riple.annotator.plugin" version "0.0.1"  
 }  
   
 group = 'org.example'  
@@ -46,9 +46,6 @@ repositories {
 	mavenLocal()  
 }  
   
-annotator{  
-	configPath = "pathTo/scanner.xml"  
-}  
   
 dependencies {  
   

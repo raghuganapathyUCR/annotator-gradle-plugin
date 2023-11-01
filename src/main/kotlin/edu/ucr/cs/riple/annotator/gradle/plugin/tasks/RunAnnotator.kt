@@ -34,7 +34,7 @@ open class RunAnnotator : DefaultTask() {
     private val annotatorJarPath: String get() = "$projectPath/build/annotator/$jarName"
 
 //    from nullaway 10.10 com.example.Initializer , com.uber.nullaway.annotations.Initializer
-    private val initializerClass = "com.badlogic.gdx.Initializer"
+    private val initializerClass = "com.uber.nullaway.annotations.Initializer"
     // extra options for the annotator build command
     @Input
     val extraOptions = project.objects.listProperty<String>()
