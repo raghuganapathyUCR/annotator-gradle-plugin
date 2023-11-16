@@ -15,17 +15,17 @@ open class AnnotatorOptions internal constructor(
     /**
      * The path to scanner.xml config file.
      */
-//    @get: Input
-//    val configPath = objectFactory.property<String>().apply {
-//        set(annotatorExtension.configPath)
-//    }
-    @get:Input @get:Optional
-    var depth = objectFactory.property<String>()
-    internal fun asArguments(): Iterable<String> = sequenceOf(
-        stringOption("depth", depth)
-    )
-        .filterNotNull()
-        .asIterable()
-    private fun stringOption(name: String, value: Provider<String>): String? =
-        value.orNull?.let { "-$name=$it" }
+    @get: Input
+    val enableAnnotator = objectFactory.property<Boolean>().apply {
+        set(annotatorExtension.enableAnnotator)
+    }
+//    @get:Input @get:Optional
+//    var depth = objectFactory.property<String>()
+//    internal fun asArguments(): Iterable<String> = sequenceOf(
+//        stringOption("depth", depth)
+//    )
+//        .filterNotNull()
+//        .asIterable()
+//    private fun stringOption(name: String, value: Provider<String>): String? =
+//        value.orNull?.let { "-$name=$it" }
 }

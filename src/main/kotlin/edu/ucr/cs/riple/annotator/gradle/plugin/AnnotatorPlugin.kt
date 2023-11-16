@@ -53,6 +53,8 @@ private const val EXTENSION_NAME = "annotator"
 //Version of the annotator-scanner library to add to the target project
 private const val ANNOTATOR_SCANNER_VERSION = "edu.ucr.cs.riple.annotator:annotator-scanner:1.3.8"
 
+private const val NULLAWAY_ANNOTATIONS_VERSION = "com.uber.nullaway:nullaway-annotations:0.10.14"
+
 /**
  * The Annotator plugin.
  *
@@ -76,26 +78,46 @@ class AnnotatorPlugin : Plugin<Project> {
         val extension = extensions.create(EXTENSION_NAME, AnnotatorExtension::class)
 
         // Add the annotator-scanner library to the target project
+        val dependencies = project.dependencies
         dependencies.add("annotationProcessor", ANNOTATOR_SCANNER_VERSION)
+        dependencies.add("implementation", NULLAWAY_ANNOTATIONS_VERSION)
+//        project.afterEvaluate {
+//
+//
+//
+//            // this check worked on MPAndroidChart - works only after the project is evaluated,
+//            // because the Android Gradle PLugin is applied after the project is evaluated
+//            if (project.plugins.hasPlugin("com.android.application") ||
+//                    project.plugins.hasPlugin("com.android.library")) {
+//                println("This is an Android project.")
+//            } else {
+//                println("This is not an Android project.")
+//            }
+//        }
+
 
         // Configure the ErrorProne plugin to use the AnnotatorScanner check
         pluginManager.withPlugin(ErrorPronePlugin.PLUGIN_ID) {
             tasks.withType<JavaCompile>().configureEach {
                 //  Get all supplied options
                 val annotatorOptions = (options.errorprone as ExtensionAware).extensions.create(
-                    EXTENSION_NAME,
-                    AnnotatorOptions::class,
-                    extension
+                        EXTENSION_NAME,
+                        AnnotatorOptions::class,
+                        extension
                 )
-                annotatorOptions.asArguments().forEach{
-                    println("OPTION:$it")
-                }
-                if(!name.toLowerCase().contains("test")){
+
+                if (!name.toLowerCase().contains("test")) {
 //                  task 1  refactor to remove the addition of compile time flags, to the RunAnnotator task, this way
                     //                  the compilaltions requested by Annotator are the only places we inject these flags, per run of the Annotator.
 
                     options.errorprone {
-                        check("AnnotatorScanner", CheckSeverity.ERROR)
+                        if (annotatorOptions.enableAnnotator.get()) {
+                            println("USER WANTS ANNOTATIONS")
+                            check("AnnotatorScanner", CheckSeverity.ERROR)
+                        } else {
+                            check("AnnotatorScanner", CheckSeverity.OFF)
+                        }
+
                         option("NullAway:SerializeFixMetadata", "true")
                         //need to make this more dynamic, extend the options object to include the path to the scanner.xml file by default
                         option("NullAway:FixSerializationConfigPath", project.projectDir.absolutePath + "/build/annotator/nullaway.xml")
@@ -105,7 +127,9 @@ class AnnotatorPlugin : Plugin<Project> {
 
             }
         }
-        tasks.register("runAnnotator", RunAnnotator::class.java)
+        tasks.register("runAnnotator", RunAnnotator::class.java) {
+            this.annotatorExtension = extension
+        }
         tasks.register("cleanAnnotator", CleanAnnotator::class.java)
         tasks.register("cleanAnnotatorOuts", CleanOut::class.java)
 
@@ -116,4 +140,4 @@ val ErrorProneOptions.annotator
     get() = (this as ExtensionAware).extensions.getByName(EXTENSION_NAME)
 
 fun ErrorProneOptions.annotator(action: Action<in AnnotatorOptions>) =
-    (this as ExtensionAware).extensions.configure(EXTENSION_NAME, action)
+        (this as ExtensionAware).extensions.configure(EXTENSION_NAME, action)

@@ -1,7 +1,9 @@
+import edu.ucr.cs.riple.annotator.gradle.plugin.AnnotatorExtension
 import edu.ucr.cs.riple.annotator.gradle.plugin.types.ModuleType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.listProperty
@@ -38,21 +40,37 @@ open class RunAnnotator : DefaultTask() {
     // extra options for the annotator build command
     @Input
     val extraOptions = project.objects.listProperty<String>()
+
+    @Input
+    lateinit var annotatorExtension: AnnotatorExtension
+
+
+// read the enableAnnotator flag which is in the annotatorOptions from AnnotatorPlugin.kt
+
+
+
     @TaskAction
     fun runAnnotator() {
-        println("Target Project Path: $projectPath")
-        ensureFolderExists(buildFolder)
-        ensureFolderExists(annotatorFolder)
+        if (annotatorExtension.enableAnnotator.get()) {
+            println("Annotator is enabled")
+            println("Target Project Path: $projectPath")
+            ensureFolderExists(buildFolder)
+            ensureFolderExists(annotatorFolder)
 
-        println("TSV File Path: $tsvFilePath")
+            println("TSV File Path: $tsvFilePath")
 
-        if (!tsvFile.exists()) {
-            writePathsToTsv()
+            if (!tsvFile.exists()) {
+                writePathsToTsv()
+            }
+
+            downloadJarIfNotExist(jarUrl, annotatorJarPath)
+
+            callJar()
+        } else {
+            println("Annotator is not enabled")
+            logger.warn("Set enableAnnotator to true in build.gradle to enable Annotator")
         }
 
-        downloadJarIfNotExist(jarUrl, annotatorJarPath)
-
-        callJar()
     }
     private fun downloadJarIfNotExist(url: String, destPath: String) {
         val jarFile = File(destPath)
