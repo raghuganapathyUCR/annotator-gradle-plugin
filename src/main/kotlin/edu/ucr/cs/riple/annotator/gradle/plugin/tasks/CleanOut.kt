@@ -1,3 +1,4 @@
+import edu.ucr.cs.riple.annotator.gradle.plugin.OutDir
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import java.io.File
@@ -10,11 +11,10 @@ open class CleanOut : DefaultTask() {
     }
     @TaskAction
     fun cleanOut() {
-        val projectPath = project.projectDir.absolutePath
-        println("Target Project Path: $projectPath")
 //        delete the annotator/out folder inside the build folder
-        val annotatorFolder = File("$projectPath/build/annotator/0")
+        val annotatorFolder = File("${OutDir.path}/annotator/0")
         if (annotatorFolder.exists()) {
+            println("Deleting ${annotatorFolder.absolutePath}")
             annotatorFolder.deleteRecursively()
         }
     }

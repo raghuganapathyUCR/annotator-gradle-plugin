@@ -77,6 +77,9 @@ class AnnotatorPlugin : Plugin<Project> {
 
         val extension = extensions.create(EXTENSION_NAME, AnnotatorExtension::class)
 
+        val tempDirPath = OutDir.path
+        println("TEMPDIRPATH $tempDirPath")
+
         // Add the annotator-scanner library to the target project
 
         this.dependencies.add("annotationProcessor", ANNOTATOR_SCANNER_VERSION)
@@ -115,8 +118,11 @@ class AnnotatorPlugin : Plugin<Project> {
 
                         option("NullAway:SerializeFixMetadata", "true")
                         //need to make this more dynamic, extend the options object to include the path to the scanner.xml file by default
-                        option("NullAway:FixSerializationConfigPath", project.projectDir.absolutePath + "/build/annotator/nullaway.xml")
-                        option("AnnotatorScanner:ConfigPath", project.projectDir.absolutePath + "/build/annotator/scanner.xml")
+                        option("NullAway:FixSerializationConfigPath", "$tempDirPath/annotator/nullaway.xml")
+                        option("AnnotatorScanner:ConfigPath", "$tempDirPath/annotator/scanner.xml")
+
+//                        option("NullAway:FixSerializationConfigPath", project.projectDir.absolutePath + "/build/annotator/nullaway.xml")
+//                        option("AnnotatorScanner:ConfigPath", project.projectDir.absolutePath + "/build/annotator/scanner.xml")
                     }
                 }
 

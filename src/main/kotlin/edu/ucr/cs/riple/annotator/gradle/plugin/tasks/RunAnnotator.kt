@@ -1,4 +1,5 @@
 import edu.ucr.cs.riple.annotator.gradle.plugin.AnnotatorExtension
+import edu.ucr.cs.riple.annotator.gradle.plugin.OutDir
 import edu.ucr.cs.riple.annotator.gradle.plugin.types.ModuleType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -20,11 +21,13 @@ open class RunAnnotator : DefaultTask() {
 
     private val projectPath: String get() = project.projectDir.absolutePath
 
-    private val buildFolder: File get() = File("$projectPath/build")
-    private val annotatorFolder: File get() = File("$projectPath/build/annotator")
-    private val tsvFilePath: String get() = "$projectPath/build/annotator/paths.tsv"
 
-   // detect the type of the project - subproject or not
+
+    private val buildFolder: File get() = File(OutDir.path)
+    private val annotatorFolder: File get() = File("${OutDir.path}/annotator")
+//    private val tsvFilePath: String get() = "$projectPath/build/annotator/paths.tsv"
+    private val tsvFilePath: String get() = "${OutDir.path}/annotator/paths.tsv"
+    // detect the type of the project - subproject or not
     private val projectType : ModuleType get() = detectType()
     // create the tsv file
     private val tsvFile: File get() = File(tsvFilePath)
@@ -34,7 +37,7 @@ open class RunAnnotator : DefaultTask() {
     private val jarUrl = "https://repo.maven.apache.org/maven2/edu/ucr/cs/riple/annotator/annotator-core/1.3.8/annotator-core-1.3.8.jar"
     private val jarVersion = "1.3.8"
     private val jarName = "annotator-core-$jarVersion.jar"
-    private val annotatorJarPath: String get() = "$projectPath/build/annotator/$jarName"
+    private val annotatorJarPath: String get() = "${OutDir.path}/annotator/$jarName"
 
 //    from nullaway 10.10 com.example.Initializer , com.uber.nullaway.annotations.Initializer
     private val initializerClass = "com.uber.nullaway.annotations.Initializer"
@@ -52,6 +55,7 @@ open class RunAnnotator : DefaultTask() {
 
     @TaskAction
     fun runAnnotator() {
+            println("TASKPATH: ${OutDir.path}")
             println("Annotator is enabled")
             println("Target Project Path: $projectPath")
             ensureFolderExists(buildFolder)
@@ -60,6 +64,10 @@ open class RunAnnotator : DefaultTask() {
             println("TSV File Path: $tsvFilePath")
 
             if (!tsvFile.exists()) {
+//               make the annotator build folder
+//                print("making annotator build folder")
+//                tsvFile.parentFile.mkdirs()
+//                tsvFile.createNewFile()
                 writePathsToTsv()
             }
 
@@ -91,16 +99,32 @@ open class RunAnnotator : DefaultTask() {
     }
     private fun ensureFolderExists(folder: File) {
         if (!folder.exists()) {
+            println(folder.absolutePath + " does not exist. Creating...")
             folder.mkdir()
         }
     }
+
+
+//    private fun writePathsToTsv() {
+//        try {
+//            // use temp location in ./build to build the paths
+//            tsvFile.bufferedWriter().use { writer ->
+//                val nullAwayConfigPath = "$projectPath/build/annotator/nullaway.xml"
+//                val annotatorConfigPath = "$projectPath/build/annotator/scanner.xml"
+//                writer.write("$nullAwayConfigPath\t$annotatorConfigPath")
+//                writer.close()
+//            }
+//        } catch (e: FileSystemException) {
+//            println("FS Error: $e")
+//        }
+//    }
 
     private fun writePathsToTsv() {
         try {
             // use temp location in ./build to build the paths
             tsvFile.bufferedWriter().use { writer ->
-                val nullAwayConfigPath = "$projectPath/build/annotator/nullaway.xml"
-                val annotatorConfigPath = "$projectPath/build/annotator/scanner.xml"
+                val nullAwayConfigPath = "${OutDir.path}/annotator/nullaway.xml"
+                val annotatorConfigPath ="${OutDir.path}/annotator/scanner.xml"
                 writer.write("$nullAwayConfigPath\t$annotatorConfigPath")
                 writer.close()
             }
@@ -150,6 +174,25 @@ open class RunAnnotator : DefaultTask() {
 
         if (exitCode != 0) {
             println("\nError: Annotator returned with exit code $exitCode.")
+        }
+        else {
+            println("\nAnnotator finished successfully.")
+        }
+//        clearOutDir()
+    }
+
+    private fun clearOutDir() {
+        val outDir = File(OutDir.path.toString())
+
+        val annotatorDir = File("$projectPath/build/annotator")
+
+        if (outDir.exists()) {
+            println("Deleting outDir: ${outDir.path}")
+            outDir.deleteRecursively()
+        }
+        if (annotatorDir.exists()) {
+            println("Deleting annotatorDir: ${annotatorDir.path}")
+            annotatorDir.deleteRecursively()
         }
     }
 
