@@ -78,22 +78,23 @@ class AnnotatorPlugin : Plugin<Project> {
         val extension = extensions.create(EXTENSION_NAME, AnnotatorExtension::class)
 
         // Add the annotator-scanner library to the target project
-        val dependencies = project.dependencies
-        dependencies.add("annotationProcessor", ANNOTATOR_SCANNER_VERSION)
-        dependencies.add("implementation", NULLAWAY_ANNOTATIONS_VERSION)
-//        project.afterEvaluate {
+
+        this.dependencies.add("annotationProcessor", ANNOTATOR_SCANNER_VERSION)
+        this.dependencies.add("compileOnly", NULLAWAY_ANNOTATIONS_VERSION)
+        project.afterEvaluate {
 //
+//            this.dependencies.add("annotationProcessor", ANNOTATOR_SCANNER_VERSION)
+//            this.dependencies.add("compileOnly", NULLAWAY_ANNOTATIONS_VERSION)
 //
-//
-//            // this check worked on MPAndroidChart - works only after the project is evaluated,
-//            // because the Android Gradle PLugin is applied after the project is evaluated
+            // this check worked on MPAndroidChart - works only after the project is evaluated,
+            // because the Android Gradle PLugin is applied after the project is evaluated
 //            if (project.plugins.hasPlugin("com.android.application") ||
 //                    project.plugins.hasPlugin("com.android.library")) {
 //                println("This is an Android project.")
 //            } else {
 //                println("This is not an Android project.")
 //            }
-//        }
+        }
 
 
         // Configure the ErrorProne plugin to use the AnnotatorScanner check
@@ -107,16 +108,10 @@ class AnnotatorPlugin : Plugin<Project> {
                 )
 
                 if (!name.toLowerCase().contains("test")) {
-//                  task 1  refactor to remove the addition of compile time flags, to the RunAnnotator task, this way
-                    //                  the compilaltions requested by Annotator are the only places we inject these flags, per run of the Annotator.
-
                     options.errorprone {
-                        if (annotatorOptions.enableAnnotator.get()) {
-                            println("USER WANTS ANNOTATIONS")
-                            check("AnnotatorScanner", CheckSeverity.ERROR)
-                        } else {
-                            check("AnnotatorScanner", CheckSeverity.OFF)
-                        }
+
+                        check("AnnotatorScanner", CheckSeverity.ERROR)
+
 
                         option("NullAway:SerializeFixMetadata", "true")
                         //need to make this more dynamic, extend the options object to include the path to the scanner.xml file by default
@@ -131,6 +126,7 @@ class AnnotatorPlugin : Plugin<Project> {
             this.annotatorExtension = extension
         }
         tasks.register("cleanAnnotator", CleanAnnotator::class.java)
+//        TODO think about wheter we need this task, usefull for debugging
         tasks.register("cleanAnnotatorOuts", CleanOut::class.java)
 
     }

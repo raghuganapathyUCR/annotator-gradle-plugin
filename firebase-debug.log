@@ -1,0 +1,14 @@
+[debug] [2023-11-29T20:11:06.716Z] ----------------------------------------------------------------------
+[debug] [2023-11-29T20:11:06.717Z] Command:       /Users/raghuwork/.nvm/versions/node/v18.16.0/bin/node /Users/raghuwork/.nvm/versions/node/v18.16.0/bin/firebase projects:list
+[debug] [2023-11-29T20:11:06.718Z] CLI Version:   12.4.0
+[debug] [2023-11-29T20:11:06.718Z] Platform:      darwin
+[debug] [2023-11-29T20:11:06.718Z] Node Version:  v18.16.0
+[debug] [2023-11-29T20:11:06.722Z] Time:          Wed Nov 29 2023 12:11:06 GMT-0800 (Pacific Standard Time)
+[debug] [2023-11-29T20:11:06.722Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2023-11-29T20:11:06.724Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2023-11-29T20:11:06.746Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-11-29T20:11:06.746Z] > authorizing via signed-in user (raghu@ecoverse.io)
+[debug] [2023-11-29T20:11:06.748Z] > refreshing access token with scopes: []
+[debug] [2023-11-29T20:11:06.749Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2023-11-29T20:11:06.749Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]

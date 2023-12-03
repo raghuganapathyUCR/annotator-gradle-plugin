@@ -6,6 +6,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.listProperty
 import java.io.File
 import java.nio.file.Files
@@ -51,7 +52,6 @@ open class RunAnnotator : DefaultTask() {
 
     @TaskAction
     fun runAnnotator() {
-        if (annotatorExtension.enableAnnotator.get()) {
             println("Annotator is enabled")
             println("Target Project Path: $projectPath")
             ensureFolderExists(buildFolder)
@@ -66,11 +66,6 @@ open class RunAnnotator : DefaultTask() {
             downloadJarIfNotExist(jarUrl, annotatorJarPath)
 
             callJar()
-        } else {
-            println("Annotator is not enabled")
-            logger.warn("Set enableAnnotator to true in build.gradle to enable Annotator")
-        }
-
     }
     private fun downloadJarIfNotExist(url: String, destPath: String) {
         val jarFile = File(destPath)
@@ -116,10 +111,13 @@ open class RunAnnotator : DefaultTask() {
     private fun callJar() {
 
         // Set the gradlewCommand based on the module type
+
+        val javaCompileCommand = getJavaCompileTaskName()
+
         val gradlewCommand = when (projectType) {
-            ModuleType.SINGLE_MODULE -> "\"cd $projectPath && ./gradlew build -x test\""
-            ModuleType.SINGLE_SUBMODULE -> "\"cd ${project.rootProject.projectDir.absolutePath} && ./gradlew build -p ${project.name} -x test\""
-            ModuleType.MULTI_MODULE_PARENT -> "\"cd $projectPath && ./gradlew build -x test\""
+            ModuleType.SINGLE_MODULE -> "\"cd $projectPath && ./gradlew $javaCompileCommand -x test\""
+            ModuleType.SINGLE_SUBMODULE -> "\"cd ${project.rootProject.projectDir.absolutePath} && ./gradlew $javaCompileCommand -p ${project.name} -x test\""
+            ModuleType.MULTI_MODULE_PARENT -> "\"cd $projectPath && ./gradlew $javaCompileCommand -x test\""
         }
 
        // Build the command to run the annotator
@@ -170,6 +168,26 @@ open class RunAnnotator : DefaultTask() {
                 ModuleType.MULTI_MODULE_PARENT
             }
         }
+    }
+
+//    function that return "compileJava" if it is present in JavaCompile tasks, else (if android project) return "compileDebugJavaWithJavac"
+    private fun getJavaCompileTaskName(): String {
+        return if (project.tasks.findByName("compileJava") != null) {
+            println("compileJava task found")
+            "compileJava"
+        } else {
+//            add checks here for whether the project is an android project - does compileDebugJavaWithJavac exist?
+//            TODO ask Manu about how to handle if both are not there
+//            Nima idea: look for tasks without "test" in their name
+            println("compileJava task not found, using compileDebugJavaWithJavac")
+            "compileDebugJavaWithJavac"
+        }
+    }
+
+    enum class ModuleType {
+        SINGLE_MODULE,
+        SINGLE_SUBMODULE,
+        MULTI_MODULE_PARENT
     }
 
 }

@@ -15,10 +15,10 @@ open class AnnotatorOptions internal constructor(
     /**
      * The path to scanner.xml config file.
      */
-    @get: Input
-    val enableAnnotator = objectFactory.property<Boolean>().apply {
-        set(annotatorExtension.enableAnnotator)
-    }
+//    @get: Input
+//    val enableAnnotator = objectFactory.property<Boolean>().apply {
+//        set(annotatorExtension.enableAnnotator)
+//    }
 //    @get:Input @get:Optional
 //    var depth = objectFactory.property<String>()
 //    internal fun asArguments(): Iterable<String> = sequenceOf(

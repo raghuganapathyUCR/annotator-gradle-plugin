@@ -35,5 +35,5 @@ open class AnnotatorExtension internal constructor(
     /**
      * The path to scanner.xml config file.
      */
-    val enableAnnotator = objectFactory.property<Boolean>().convention(false)
+//    val enableAnnotator = objectFactory.property<Boolean>().convention(false)
 }
