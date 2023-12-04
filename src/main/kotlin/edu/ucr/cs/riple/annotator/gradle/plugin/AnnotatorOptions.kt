@@ -9,8 +9,8 @@ import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 
 open class AnnotatorOptions internal constructor(
-    objectFactory: ObjectFactory,
-    annotatorExtension: AnnotatorExtension
+//    objectFactory: ObjectFactory,
+//    annotatorExtension: AnnotatorExtension
 ) {
     /**
      * The path to scanner.xml config file.

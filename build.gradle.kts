@@ -12,6 +12,7 @@ plugins {
 group = "net.ltgt.gradle"
 version = "0.0.1"
 
+
 // Make sure Gradle Module Metadata targets the appropriate JVM version
 tasks.withType<JavaCompile>().configureEach {
     options.release.set(kotlinDslPluginOptions.jvmTarget.map { JavaVersion.toVersion(it).majorVersion.toInt() })
@@ -21,9 +22,12 @@ kotlinDslPluginOptions {
     experimentalWarning.set(false)
 }
 
-//tasks.withType<KotlinCompile>().configureEach {
-//    kotlinOptions.allWarningsAsErrors = true
-//}
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "11"
+        allWarningsAsErrors = true
+    }
+}
 
 gradle.taskGraph.whenReady {
     if (hasTask(":publishPlugins")) {

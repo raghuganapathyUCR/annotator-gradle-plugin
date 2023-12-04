@@ -1,13 +1,13 @@
 import edu.ucr.cs.riple.annotator.gradle.plugin.AnnotatorExtension
 import edu.ucr.cs.riple.annotator.gradle.plugin.OutDir
-import edu.ucr.cs.riple.annotator.gradle.plugin.types.ModuleType
+
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
+
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.compile.JavaCompile
+
 import org.gradle.kotlin.dsl.listProperty
 import java.io.File
 import java.nio.file.Files
@@ -25,11 +25,9 @@ open class RunAnnotator : DefaultTask() {
 
     private val buildFolder: File get() = File(OutDir.path)
     private val annotatorFolder: File get() = File("${OutDir.path}/annotator")
-//    private val tsvFilePath: String get() = "$projectPath/build/annotator/paths.tsv"
-    private val tsvFilePath: String get() = "${OutDir.path}/annotator/paths.tsv"
-    // detect the type of the project - subproject or not
-    private val projectType : ModuleType get() = detectType()
-    // create the tsv file
+    private val tsvFilePath: String get() = "$projectPath/build/annotator/paths.tsv"
+//    private val tsvFilePath: String get() = "${OutDir.path}/annotator/paths.tsv"
+
     private val tsvFile: File get() = File(tsvFilePath)
 
 
@@ -39,8 +37,16 @@ open class RunAnnotator : DefaultTask() {
     private val jarName = "annotator-core-$jarVersion.jar"
     private val annotatorJarPath: String get() = "${OutDir.path}/annotator/$jarName"
 
-//    from nullaway 10.10 com.example.Initializer , com.uber.nullaway.annotations.Initializer
+
+
+
+
     private val initializerClass = "com.uber.nullaway.annotations.Initializer"
+
+
+
+    private val projectType : ModuleType get() = detectType()
+
     // extra options for the annotator build command
     @Input
     val extraOptions = project.objects.listProperty<String>()
@@ -55,19 +61,15 @@ open class RunAnnotator : DefaultTask() {
 
     @TaskAction
     fun runAnnotator() {
-            println("TASKPATH: ${OutDir.path}")
-            println("Annotator is enabled")
-            println("Target Project Path: $projectPath")
+
             ensureFolderExists(buildFolder)
             ensureFolderExists(annotatorFolder)
 
-            println("TSV File Path: $tsvFilePath")
-
             if (!tsvFile.exists()) {
 //               make the annotator build folder
-//                print("making annotator build folder")
-//                tsvFile.parentFile.mkdirs()
-//                tsvFile.createNewFile()
+                println("TSV file does not exist")
+                tsvFile.parentFile.mkdirs()
+                tsvFile.createNewFile()
                 writePathsToTsv()
             }
 
@@ -105,12 +107,26 @@ open class RunAnnotator : DefaultTask() {
     }
 
 
+    private fun writePathsToTsv() {
+        try {
+            // use temp location in ./build to build the paths
+            tsvFile.bufferedWriter().use { writer ->
+                val nullAwayConfigPath = "$projectPath/build/annotator/nullaway.xml"
+                val annotatorConfigPath = "$projectPath/build/annotator/scanner.xml"
+                writer.write("$nullAwayConfigPath\t$annotatorConfigPath")
+                writer.close()
+            }
+        } catch (e: FileSystemException) {
+            println("FS Error: $e")
+        }
+    }
+
 //    private fun writePathsToTsv() {
 //        try {
 //            // use temp location in ./build to build the paths
 //            tsvFile.bufferedWriter().use { writer ->
-//                val nullAwayConfigPath = "$projectPath/build/annotator/nullaway.xml"
-//                val annotatorConfigPath = "$projectPath/build/annotator/scanner.xml"
+//                val nullAwayConfigPath = "${OutDir.path}/annotator/nullaway.xml"
+//                val annotatorConfigPath ="${OutDir.path}/annotator/scanner.xml"
 //                writer.write("$nullAwayConfigPath\t$annotatorConfigPath")
 //                writer.close()
 //            }
@@ -119,18 +135,16 @@ open class RunAnnotator : DefaultTask() {
 //        }
 //    }
 
-    private fun writePathsToTsv() {
-        try {
-            // use temp location in ./build to build the paths
-            tsvFile.bufferedWriter().use { writer ->
-                val nullAwayConfigPath = "${OutDir.path}/annotator/nullaway.xml"
-                val annotatorConfigPath ="${OutDir.path}/annotator/scanner.xml"
-                writer.write("$nullAwayConfigPath\t$annotatorConfigPath")
-                writer.close()
-            }
-        } catch (e: FileSystemException) {
-            println("FS Error: $e")
-        }
+    // Build the command to compile a single submodule
+    private fun buildCompileJavaCommand(): String {
+        val projectPath = project.path
+        val taskName = getJavaCompileTaskName()
+        val excludeTask = "test"
+
+        // Constructing the command
+        val command = "./gradlew $projectPath:$taskName -x $excludeTask"
+
+        return command
     }
     private fun callJar() {
 
@@ -138,9 +152,11 @@ open class RunAnnotator : DefaultTask() {
 
         val javaCompileCommand = getJavaCompileTaskName()
 
+
+
         val gradlewCommand = when (projectType) {
             ModuleType.SINGLE_MODULE -> "\"cd $projectPath && ./gradlew $javaCompileCommand -x test\""
-            ModuleType.SINGLE_SUBMODULE -> "\"cd ${project.rootProject.projectDir.absolutePath} && ./gradlew $javaCompileCommand -p ${project.name} -x test\""
+            ModuleType.SINGLE_SUBMODULE -> "\"cd ${project.rootProject.projectDir.absolutePath} && ${buildCompileJavaCommand()}\""
             ModuleType.MULTI_MODULE_PARENT -> "\"cd $projectPath && ./gradlew $javaCompileCommand -x test\""
         }
 
@@ -178,11 +194,11 @@ open class RunAnnotator : DefaultTask() {
         else {
             println("\nAnnotator finished successfully.")
         }
-//        clearOutDir()
+        clearOutDir()
     }
 
     private fun clearOutDir() {
-        val outDir = File(OutDir.path.toString())
+        val outDir = File(OutDir.path+"/annotator/0")
 
         val annotatorDir = File("$projectPath/build/annotator")
 
@@ -200,14 +216,17 @@ open class RunAnnotator : DefaultTask() {
         return when {
 //            single project detected when the project is the root project and has no submodules
             project == project.rootProject && project.childProjects.isEmpty() -> {
+                println("Single module detected")
                 ModuleType.SINGLE_MODULE
             }
 //            single submodule detected when the project is not the root project and has no submodules
             project != project.rootProject && project.childProjects.isEmpty() -> {
+                println("Single submodule detected")
                 ModuleType.SINGLE_SUBMODULE
             }
 //            multi module parent detected when the project is the root project and has submodules
             else -> {
+                println("Multi module parent detected")
                 ModuleType.MULTI_MODULE_PARENT
             }
         }
@@ -216,13 +235,12 @@ open class RunAnnotator : DefaultTask() {
 //    function that return "compileJava" if it is present in JavaCompile tasks, else (if android project) return "compileDebugJavaWithJavac"
     private fun getJavaCompileTaskName(): String {
         return if (project.tasks.findByName("compileJava") != null) {
-            println("compileJava task found")
+
             "compileJava"
         } else {
 //            add checks here for whether the project is an android project - does compileDebugJavaWithJavac exist?
 //            TODO ask Manu about how to handle if both are not there
 //            Nima idea: look for tasks without "test" in their name
-            println("compileJava task not found, using compileDebugJavaWithJavac")
             "compileDebugJavaWithJavac"
         }
     }

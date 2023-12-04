@@ -33,18 +33,19 @@ import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import net.ltgt.gradle.errorprone.errorprone
 
 import org.gradle.api.Action
-import org.gradle.api.DefaultTask
+
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.tasks.TaskAction
+
 
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.dependencies
+
 import org.gradle.kotlin.dsl.withType
 import org.gradle.util.GradleVersion
+
 
 
 //Name of the extension
@@ -77,38 +78,20 @@ class AnnotatorPlugin : Plugin<Project> {
 
         val extension = extensions.create(EXTENSION_NAME, AnnotatorExtension::class)
 
-        val tempDirPath = OutDir.path
-        println("TEMPDIRPATH $tempDirPath")
+//        val tempDirPath = OutDir.path
 
         // Add the annotator-scanner library to the target project
 
         this.dependencies.add("annotationProcessor", ANNOTATOR_SCANNER_VERSION)
         this.dependencies.add("compileOnly", NULLAWAY_ANNOTATIONS_VERSION)
-        project.afterEvaluate {
-//
-//            this.dependencies.add("annotationProcessor", ANNOTATOR_SCANNER_VERSION)
-//            this.dependencies.add("compileOnly", NULLAWAY_ANNOTATIONS_VERSION)
-//
-            // this check worked on MPAndroidChart - works only after the project is evaluated,
-            // because the Android Gradle PLugin is applied after the project is evaluated
-//            if (project.plugins.hasPlugin("com.android.application") ||
-//                    project.plugins.hasPlugin("com.android.library")) {
-//                println("This is an Android project.")
-//            } else {
-//                println("This is not an Android project.")
-//            }
-        }
 
+
+
+//        print path to paths.tsv
 
         // Configure the ErrorProne plugin to use the AnnotatorScanner check
         pluginManager.withPlugin(ErrorPronePlugin.PLUGIN_ID) {
             tasks.withType<JavaCompile>().configureEach {
-                //  Get all supplied options
-                val annotatorOptions = (options.errorprone as ExtensionAware).extensions.create(
-                        EXTENSION_NAME,
-                        AnnotatorOptions::class,
-                        extension
-                )
 
                 if (!name.toLowerCase().contains("test")) {
                     options.errorprone {
@@ -118,11 +101,11 @@ class AnnotatorPlugin : Plugin<Project> {
 
                         option("NullAway:SerializeFixMetadata", "true")
                         //need to make this more dynamic, extend the options object to include the path to the scanner.xml file by default
-                        option("NullAway:FixSerializationConfigPath", "$tempDirPath/annotator/nullaway.xml")
-                        option("AnnotatorScanner:ConfigPath", "$tempDirPath/annotator/scanner.xml")
+//                        option("NullAway:FixSerializationConfigPath", "${OutDir.path}/annotator/nullaway.xml")
+//                        option("AnnotatorScanner:ConfigPath", "${OutDir.path}/annotator/scanner.xml")
 
-//                        option("NullAway:FixSerializationConfigPath", project.projectDir.absolutePath + "/build/annotator/nullaway.xml")
-//                        option("AnnotatorScanner:ConfigPath", project.projectDir.absolutePath + "/build/annotator/scanner.xml")
+                        option("NullAway:FixSerializationConfigPath", project.projectDir.absolutePath + "/build/annotator/nullaway.xml")
+                        option("AnnotatorScanner:ConfigPath", project.projectDir.absolutePath + "/build/annotator/scanner.xml")
                     }
                 }
 
@@ -137,6 +120,8 @@ class AnnotatorPlugin : Plugin<Project> {
 
     }
 }
+
+
 
 val ErrorProneOptions.annotator
     get() = (this as ExtensionAware).extensions.getByName(EXTENSION_NAME)
