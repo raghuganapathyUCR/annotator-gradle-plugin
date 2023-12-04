@@ -80,14 +80,14 @@ class AnnotatorPlugin : Plugin<Project> {
 
 //        val tempDirPath = OutDir.path
 
-        // Add the annotator-scanner library to the target project
+        // Add the annotator-scanner library to the target project after the project is evaluated becuase
+        //  annotationProcesor is available only after "java"/"java-library" plugin is applied
+        project.afterEvaluate{
+            this.dependencies.add("annotationProcessor", ANNOTATOR_SCANNER_VERSION)
+            this.dependencies.add("compileOnly", NULLAWAY_ANNOTATIONS_VERSION)
+        }
 
-        this.dependencies.add("annotationProcessor", ANNOTATOR_SCANNER_VERSION)
-        this.dependencies.add("compileOnly", NULLAWAY_ANNOTATIONS_VERSION)
 
-
-
-//        print path to paths.tsv
 
         // Configure the ErrorProne plugin to use the AnnotatorScanner check
         pluginManager.withPlugin(ErrorPronePlugin.PLUGIN_ID) {

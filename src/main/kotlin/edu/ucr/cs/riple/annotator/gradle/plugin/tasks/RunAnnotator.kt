@@ -1,9 +1,11 @@
 import edu.ucr.cs.riple.annotator.gradle.plugin.AnnotatorExtension
 import edu.ucr.cs.riple.annotator.gradle.plugin.OutDir
+import edu.ucr.cs.riple.annotator.gradle.plugin.types.ModuleType
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
@@ -14,13 +16,13 @@ import java.nio.file.Files
 
 open class RunAnnotator : DefaultTask() {
 
-    init{
+    init {
         group = "annotator"
-        description = "Run Annotator on the selected packgage (set NullAway:AnnotatedPackages in build.gradle before running)"
+        description =
+            "Run Annotator on the selected packgage (set NullAway:AnnotatedPackages in build.gradle before running)"
     }
 
     private val projectPath: String get() = project.projectDir.absolutePath
-
 
 
     private val buildFolder: File get() = File(OutDir.path)
@@ -31,21 +33,17 @@ open class RunAnnotator : DefaultTask() {
     private val tsvFile: File get() = File(tsvFilePath)
 
 
-
-    private val jarUrl = "https://repo.maven.apache.org/maven2/edu/ucr/cs/riple/annotator/annotator-core/1.3.8/annotator-core-1.3.8.jar"
+    private val jarUrl =
+        "https://repo.maven.apache.org/maven2/edu/ucr/cs/riple/annotator/annotator-core/1.3.8/annotator-core-1.3.8.jar"
     private val jarVersion = "1.3.8"
     private val jarName = "annotator-core-$jarVersion.jar"
     private val annotatorJarPath: String get() = "${OutDir.path}/annotator/$jarName"
 
 
-
-
-
     private val initializerClass = "com.uber.nullaway.annotations.Initializer"
 
 
-
-    private val projectType : ModuleType get() = detectType()
+    private val projectType: ModuleType get() = detectType()
 
     // extra options for the annotator build command
     @Input
@@ -58,25 +56,25 @@ open class RunAnnotator : DefaultTask() {
 // read the enableAnnotator flag which is in the annotatorOptions from AnnotatorPlugin.kt
 
 
-
     @TaskAction
     fun runAnnotator() {
 
-            ensureFolderExists(buildFolder)
-            ensureFolderExists(annotatorFolder)
+        ensureFolderExists(buildFolder)
+        ensureFolderExists(annotatorFolder)
 
-            if (!tsvFile.exists()) {
+        if (!tsvFile.exists()) {
 //               make the annotator build folder
-                println("TSV file does not exist")
-                tsvFile.parentFile.mkdirs()
-                tsvFile.createNewFile()
-                writePathsToTsv()
-            }
+            println("TSV file does not exist")
+            tsvFile.parentFile.mkdirs()
+            tsvFile.createNewFile()
+            writePathsToTsv()
+        }
 
-            downloadJarIfNotExist(jarUrl, annotatorJarPath)
+        downloadJarIfNotExist(jarUrl, annotatorJarPath)
 
-            callJar()
+        callJar()
     }
+
     private fun downloadJarIfNotExist(url: String, destPath: String) {
         val jarFile = File(destPath)
         if (!jarFile.exists()) {
@@ -95,10 +93,11 @@ open class RunAnnotator : DefaultTask() {
             } catch (e: Exception) {
                 println("Error downloading jar file from $url. Error: $e")
             }
-        }else{
+        } else {
             println("Jar file already exists at $destPath")
         }
     }
+
     private fun ensureFolderExists(folder: File) {
         if (!folder.exists()) {
             println(folder.absolutePath + " does not exist. Creating...")
@@ -138,6 +137,7 @@ open class RunAnnotator : DefaultTask() {
     // Build the command to compile a single submodule
     private fun buildCompileJavaCommand(): String {
         val projectPath = project.path
+        println(projectPath)
         val taskName = getJavaCompileTaskName()
         val excludeTask = "test"
 
@@ -146,6 +146,7 @@ open class RunAnnotator : DefaultTask() {
 
         return command
     }
+
     private fun callJar() {
 
         // Set the gradlewCommand based on the module type
@@ -153,14 +154,13 @@ open class RunAnnotator : DefaultTask() {
         val javaCompileCommand = getJavaCompileTaskName()
 
 
-
         val gradlewCommand = when (projectType) {
             ModuleType.SINGLE_MODULE -> "\"cd $projectPath && ./gradlew $javaCompileCommand -x test\""
             ModuleType.SINGLE_SUBMODULE -> "\"cd ${project.rootProject.projectDir.absolutePath} && ${buildCompileJavaCommand()}\""
-            ModuleType.MULTI_MODULE_PARENT -> "\"cd $projectPath && ./gradlew $javaCompileCommand -x test\""
+            ModuleType.MULTI_MODULE_PARENT -> "\"cd ${project.rootProject.projectDir.absolutePath} && ./gradlew $javaCompileCommand -x test\""
         }
 
-       // Build the command to run the annotator
+        // Build the command to run the annotator
         val buildCommand = listOf(
             "java",
             "-jar", annotatorJarPath,
@@ -190,15 +190,14 @@ open class RunAnnotator : DefaultTask() {
 
         if (exitCode != 0) {
             println("\nError: Annotator returned with exit code $exitCode.")
-        }
-        else {
+        } else {
             println("\nAnnotator finished successfully.")
         }
         clearOutDir()
     }
 
     private fun clearOutDir() {
-        val outDir = File(OutDir.path+"/annotator/0")
+        val outDir = File(OutDir.path + "/annotator/0")
 
         val annotatorDir = File("$projectPath/build/annotator")
 
@@ -232,23 +231,19 @@ open class RunAnnotator : DefaultTask() {
         }
     }
 
-//    function that return "compileJava" if it is present in JavaCompile tasks, else (if android project) return "compileDebugJavaWithJavac"
+    //    function that return "compileJava" if it is present in JavaCompile tasks, else (if android project) return "compileDebugJavaWithJavac"
     private fun getJavaCompileTaskName(): String {
         return if (project.tasks.findByName("compileJava") != null) {
-
             "compileJava"
         } else {
 //            add checks here for whether the project is an android project - does compileDebugJavaWithJavac exist?
 //            TODO ask Manu about how to handle if both are not there
 //            Nima idea: look for tasks without "test" in their name
-            "compileDebugJavaWithJavac"
+            if (project.tasks.findByName("compileDebugJavaWithJavac") != null) {
+                "compileDebugJavaWithJavac"
+            } else {
+                throw GradleException("Could not find compileJava or compileDebugJavaWithJavac task")
+            }
         }
     }
-
-    enum class ModuleType {
-        SINGLE_MODULE,
-        SINGLE_SUBMODULE,
-        MULTI_MODULE_PARENT
-    }
-
 }
