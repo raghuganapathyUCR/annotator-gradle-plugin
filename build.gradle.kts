@@ -67,9 +67,11 @@ dependencies {
     testImplementation("com.google.errorprone:error_prone_check_api:$errorproneVersion") {
         exclude(group = "com.google.errorprone", module = "javac")
     }
-    implementation("com.squareup.okhttp3:okhttp:4.11.0")
 
     additionalPluginClasspath("net.ltgt.gradle:gradle-errorprone-plugin:$errorpronePluginVersion")
+
+    //implementation for the Annotator Core
+    implementation("edu.ucr.cs.riple.annotator:annotator-core:1.3.8")
 }
 
 tasks {

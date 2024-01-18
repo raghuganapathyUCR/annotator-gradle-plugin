@@ -2,17 +2,18 @@ import edu.ucr.cs.riple.annotator.gradle.plugin.AnnotatorExtension
 import edu.ucr.cs.riple.annotator.gradle.plugin.OutDir
 import edu.ucr.cs.riple.annotator.gradle.plugin.types.ModuleType
 
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+
+import edu.ucr.cs.riple.core.Annotator
+import edu.ucr.cs.riple.core.Config
 
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 import org.gradle.kotlin.dsl.listProperty
 import java.io.File
-import java.nio.file.Files
+
 
 open class RunAnnotator : DefaultTask() {
 
@@ -53,8 +54,6 @@ open class RunAnnotator : DefaultTask() {
     lateinit var annotatorExtension: AnnotatorExtension
 
 
-// read the enableAnnotator flag which is in the annotatorOptions from AnnotatorPlugin.kt
-
 
     @TaskAction
     fun runAnnotator() {
@@ -70,32 +69,8 @@ open class RunAnnotator : DefaultTask() {
             writePathsToTsv()
         }
 
-        downloadJarIfNotExist(jarUrl, annotatorJarPath)
 
         callJar()
-    }
-
-    private fun downloadJarIfNotExist(url: String, destPath: String) {
-        val jarFile = File(destPath)
-        if (!jarFile.exists()) {
-            try {
-                println("Downloading jar file from $url to $destPath")
-
-                val client = OkHttpClient()
-                val request = Request.Builder().url(url).build()
-                val response = client.newCall(request).execute()
-
-                if (response.isSuccessful) {
-                    response.body?.bytes()?.let { Files.write(jarFile.toPath(), it) }
-                } else {
-                    println("Failed to download Annotator jar file. HTTP Status Code: ${response.code}")
-                }
-            } catch (e: Exception) {
-                println("Error downloading jar file from $url. Error: $e")
-            }
-        } else {
-            println("Jar file already exists at $destPath")
-        }
     }
 
     private fun ensureFolderExists(folder: File) {
@@ -120,19 +95,6 @@ open class RunAnnotator : DefaultTask() {
         }
     }
 
-//    private fun writePathsToTsv() {
-//        try {
-//            // use temp location in ./build to build the paths
-//            tsvFile.bufferedWriter().use { writer ->
-//                val nullAwayConfigPath = "${OutDir.path}/annotator/nullaway.xml"
-//                val annotatorConfigPath ="${OutDir.path}/annotator/scanner.xml"
-//                writer.write("$nullAwayConfigPath\t$annotatorConfigPath")
-//                writer.close()
-//            }
-//        } catch (e: FileSystemException) {
-//            println("FS Error: $e")
-//        }
-//    }
 
     // Build the command to compile a single submodule
     private fun buildCompileJavaCommand(): String {
@@ -142,9 +104,8 @@ open class RunAnnotator : DefaultTask() {
         val excludeTask = "test"
 
         // Constructing the command
-        val command = "./gradlew $projectPath:$taskName -x $excludeTask"
 
-        return command
+        return "./gradlew $projectPath:$taskName -x $excludeTask"
     }
 
     private fun callJar() {
@@ -162,8 +123,6 @@ open class RunAnnotator : DefaultTask() {
 
         // Build the command to run the annotator
         val buildCommand = listOf(
-            "java",
-            "-jar", annotatorJarPath,
             "-d", annotatorFolder.toString(),
             "-cp", tsvFilePath,
             "-i", initializerClass,
@@ -172,43 +131,27 @@ open class RunAnnotator : DefaultTask() {
         ) + extraOptions.get()
 
 
-        println("\nExecuting the following command:\n${buildCommand.joinToString(" ")}")
+//        trying to use the Annotator API to start the annotator
+        val config = Config(buildCommand.toTypedArray())
+        val annotator = Annotator(config)
+        annotator.start()
 
-        // annotate the target project
-        val process = ProcessBuilder(buildCommand)
-            .start()
-
-        // Read the output stream
-        val reader = process.inputStream.bufferedReader()
-        reader.forEachLine { println(it) }
-
-        // Read the error stream
-        val errorReader = process.errorStream.bufferedReader()
-        errorReader.forEachLine { System.err.println(it) }
-
-        val exitCode = process.waitFor()
-
-        if (exitCode != 0) {
-            println("\nError: Annotator returned with exit code $exitCode.")
-        } else {
-            println("\nAnnotator finished successfully.")
-        }
         clearOutDir()
     }
 
     private fun clearOutDir() {
         val outDir = File(OutDir.path + "/annotator/0")
 
-        val annotatorDir = File("$projectPath/build/annotator")
+//        val annotatorDir = File("$projectPath/build/annotator")
 
         if (outDir.exists()) {
             println("Deleting outDir: ${outDir.path}")
             outDir.deleteRecursively()
         }
-        if (annotatorDir.exists()) {
-            println("Deleting annotatorDir: ${annotatorDir.path}")
-            annotatorDir.deleteRecursively()
-        }
+//        if (annotatorDir.exists()) {
+//            println("Deleting annotatorDir: ${annotatorDir.path}")
+//            annotatorDir.deleteRecursively()
+//        }
     }
 
     private fun detectType(): ModuleType {
