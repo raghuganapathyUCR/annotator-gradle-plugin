@@ -71,7 +71,7 @@ dependencies {
     additionalPluginClasspath("net.ltgt.gradle:gradle-errorprone-plugin:$errorpronePluginVersion")
 
     //implementation for the Annotator Core
-    implementation("edu.ucr.cs.riple.annotator:annotator-core:1.3.8")
+    implementation("edu.ucr.cs.riple.annotator:annotator-core:1.3.12")
 }
 
 tasks {

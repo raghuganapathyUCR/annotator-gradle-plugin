@@ -99,7 +99,6 @@ open class RunAnnotator : DefaultTask() {
     // Build the command to compile a single submodule
     private fun buildCompileJavaCommand(): String {
         val projectPath = project.path
-        println(projectPath)
         val taskName = getJavaCompileTaskName()
         val excludeTask = "test"
 
