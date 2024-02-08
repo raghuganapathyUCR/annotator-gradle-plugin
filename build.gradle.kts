@@ -9,6 +9,13 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.nosphere.gradle.github.actions") version "1.3.2"
 }
+repositories{
+    mavenLocal()
+    mavenCentral()
+    gradlePluginPortal()
+    google()
+}
+
 group = "net.ltgt.gradle"
 version = "0.0.1"
 
@@ -71,7 +78,7 @@ dependencies {
     additionalPluginClasspath("net.ltgt.gradle:gradle-errorprone-plugin:$errorpronePluginVersion")
 
     //implementation for the Annotator Core
-    implementation("edu.ucr.cs.riple.annotator:annotator-core:1.3.12")
+    implementation("edu.ucr.cs.riple.annotator:annotator-core:1.3.13-SNAPSHOT")
 }
 
 tasks {

@@ -52,7 +52,7 @@ import org.gradle.util.GradleVersion
 private const val EXTENSION_NAME = "annotator"
 
 //Version of the annotator-scanner library to add to the target project
-private const val ANNOTATOR_SCANNER_VERSION = "edu.ucr.cs.riple.annotator:annotator-scanner:1.3.8"
+private const val ANNOTATOR_SCANNER_VERSION = "edu.ucr.cs.riple.annotator:annotator-scanner:1.3.13-SNAPSHOT"
 
 private const val NULLAWAY_ANNOTATIONS_VERSION = "com.uber.nullaway:nullaway-annotations:0.10.14"
 
