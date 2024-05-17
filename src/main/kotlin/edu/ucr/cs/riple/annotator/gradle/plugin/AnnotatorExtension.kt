@@ -25,13 +25,15 @@
 package edu.ucr.cs.riple.annotator.gradle.plugin
 
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.tasks.Input
 import org.gradle.kotlin.dsl.listProperty
+import org.gradle.kotlin.dsl.property
 
 open class AnnotatorExtension internal constructor(
-    objectFactory: ObjectFactory
+//    objectFactory: ObjectFactory
 ) {
     /**
-     * The list of packages that should be considered properly annotated according to the NullAway convention.
+     * The path to scanner.xml config file.
      */
-    val annotatedPackages = objectFactory.listProperty<String>()
+//    val enableAnnotator = objectFactory.property<Boolean>().convention(false)
 }
